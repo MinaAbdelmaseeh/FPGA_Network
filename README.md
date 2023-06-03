@@ -1,6 +1,6 @@
 # FPGA_Network
-This project is a circuit switched FPGA network.
-The Files you will need are Node.vhd, UART_Tx.vhd,UART_Rx.vhd,router.vhd
+This project is a circuit switched FPGA network. 
+### The Files you will need are Node.vhd, UART_Tx.vhd,UART_Rx.vhd,router.vhd
 ## requests
 each packet is 8 bits supporting 3 types of requests :
 ### 1 - RESERVE PATH
