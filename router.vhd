@@ -347,7 +347,7 @@ end process;
 
 -- TX VALID
 
-Tx_valid_d<=Tx_assigned when (state="01" and request_rx_valid='1') else
+Tx_valid<=Tx_assigned when (state="01" and request_rx_valid='1') else
           "00000";
 
 --- router 
@@ -382,120 +382,120 @@ Tx_valid_d<=Tx_assigned when (state="01" and request_rx_valid='1') else
 --          Rx_self_fifo when (state="10" and Tx_assigned_Rx(14 downto 12) = "100") else
 --          "00000000"; -- empty
 
-Tx_up_d<= std_logic_vector(current_request) when (state="01" and Tx_assigned_Rx(2 downto 0) = request_rx_port) else
+Tx_up<= std_logic_vector(current_request) when (state="01" and Tx_assigned_Rx(2 downto 0) = request_rx_port) else
           "00000000"; -- empty
-Tx_down_d<= std_logic_vector(current_request) when (state="01" and Tx_assigned_Rx(5 downto 3) = request_rx_port) else
+Tx_down<= std_logic_vector(current_request) when (state="01" and Tx_assigned_Rx(5 downto 3) = request_rx_port) else
           "00000000"; -- empty
-Tx_left_d<= std_logic_vector(current_request) when (state="01" and Tx_assigned_Rx(8 downto 6) = request_rx_port) else
+Tx_left<= std_logic_vector(current_request) when (state="01" and Tx_assigned_Rx(8 downto 6) = request_rx_port) else
           "00000000"; -- empty
-Tx_right_d<= std_logic_vector(current_request) when (state="01" and Tx_assigned_Rx(11 downto 9) = request_rx_port) else
+Tx_right<= std_logic_vector(current_request) when (state="01" and Tx_assigned_Rx(11 downto 9) = request_rx_port) else
           "00000000"; -- empty
-Tx_self_d<= std_logic_vector(current_request) when (state="01" and Tx_assigned_Rx(14 downto 12) = request_rx_port) else
+Tx_self<= std_logic_vector(current_request) when (state="01" and Tx_assigned_Rx(14 downto 12) = request_rx_port) else
           "00000000"; -- empty
           
 --- output clock cycle expander convert from 1 clk to 4 clks using FSM
-process(clk) begin
-    if(rising_edge(clk)) then
-        if(Tx_up_expander_state="11111" and Tx_valid_d(0)='0') then
-            Tx_up_expander_state<="11110";
-            Tx_valid(0)<= '0';
-            Tx_up<= "00000000";
-        elsif(Tx_up_expander_state="11110" and Tx_valid_d(0)='1') then
-            Tx_up_expander_state<="00000";
-            Tx_valid(0)<= '1';
-            Tx_up<= Tx_up_d;
-        elsif(Tx_up_expander_state<"10100") then
-            Tx_valid(0)<= '1';
-            Tx_up_expander_state<=Tx_up_expander_state + 1;
-        elsif(Tx_up_expander_state="10100") then
-            Tx_valid(0)<= '0';
-            Tx_up<= "00000000";
-            Tx_up_expander_state<="11111";
-        end if;
-    end if;
-end process;
+--process(clk) begin
+--    if(rising_edge(clk)) then
+--        if(Tx_up_expander_state="11111" and Tx_valid_d(0)='0') then
+--            Tx_up_expander_state<="11110";
+--            Tx_valid(0)<= '0';
+--            Tx_up<= "00000000";
+--        elsif(Tx_up_expander_state="11110" and Tx_valid_d(0)='1') then
+--            Tx_up_expander_state<="00000";
+--            Tx_valid(0)<= '1';
+--            Tx_up<= Tx_up_d;
+--        elsif(Tx_up_expander_state<"10100") then
+--            Tx_valid(0)<= '1';
+--            Tx_up_expander_state<=Tx_up_expander_state + 1;
+--        elsif(Tx_up_expander_state="10100") then
+--            Tx_valid(0)<= '0';
+--            Tx_up<= "00000000";
+--            Tx_up_expander_state<="11111";
+--        end if;
+--    end if;
+--end process;
 
-process(clk) begin
-    if(rising_edge(clk)) then
-        if(Tx_down_expander_state="11111" and Tx_valid_d(1)='0') then
-            Tx_down_expander_state<="11110";
-            Tx_valid(1)<= '0';
-            Tx_down<= "00000000";
-        elsif(Tx_down_expander_state="11110" and Tx_valid_d(1)='1') then
-            Tx_down_expander_state<="00000";
-            Tx_valid(1)<= '1';
-            Tx_down<= Tx_down_d;
-        elsif(Tx_down_expander_state<"10100") then
-            Tx_valid(1)<= '1';
-            Tx_down_expander_state<=Tx_down_expander_state + 1;
-        elsif(Tx_down_expander_state="10100") then
-            Tx_valid(1)<= '0';
-            Tx_down<= "00000000";
-            Tx_down_expander_state<="11111";
-        end if;
-    end if;
-end process;
+--process(clk) begin
+--    if(rising_edge(clk)) then
+--        if(Tx_down_expander_state="11111" and Tx_valid_d(1)='0') then
+--            Tx_down_expander_state<="11110";
+--            Tx_valid(1)<= '0';
+--            Tx_down<= "00000000";
+--        elsif(Tx_down_expander_state="11110" and Tx_valid_d(1)='1') then
+--            Tx_down_expander_state<="00000";
+--            Tx_valid(1)<= '1';
+--            Tx_down<= Tx_down_d;
+--        elsif(Tx_down_expander_state<"10100") then
+--            Tx_valid(1)<= '1';
+--            Tx_down_expander_state<=Tx_down_expander_state + 1;
+--        elsif(Tx_down_expander_state="10100") then
+--            Tx_valid(1)<= '0';
+--            Tx_down<= "00000000";
+--            Tx_down_expander_state<="11111";
+--        end if;
+--    end if;
+--end process;
 
-process(clk) begin
-    if(rising_edge(clk)) then
-        if(Tx_left_expander_state="11111" and Tx_valid_d(2)='0') then
-            Tx_left_expander_state<="11110";
-            Tx_valid(2)<= '0';
-            Tx_left<= "00000000";
-        elsif(Tx_left_expander_state="11110" and Tx_valid_d(2)='1') then
-            Tx_left_expander_state<="00000";
-            Tx_valid(2)<= '1';
-            Tx_left<= Tx_left_d;
-        elsif(Tx_left_expander_state<"10100") then
-            Tx_valid(2)<= '1';
-            Tx_left_expander_state<=Tx_left_expander_state + 1;
-        elsif(Tx_left_expander_state="10100") then
-            Tx_valid(2)<= '0';
-            Tx_left<= "00000000";
-            Tx_left_expander_state<="11111";
-        end if;
-    end if;
-end process;
+--process(clk) begin
+--    if(rising_edge(clk)) then
+--        if(Tx_left_expander_state="11111" and Tx_valid_d(2)='0') then
+--            Tx_left_expander_state<="11110";
+--            Tx_valid(2)<= '0';
+--            Tx_left<= "00000000";
+--        elsif(Tx_left_expander_state="11110" and Tx_valid_d(2)='1') then
+--            Tx_left_expander_state<="00000";
+--            Tx_valid(2)<= '1';
+--            Tx_left<= Tx_left_d;
+--        elsif(Tx_left_expander_state<"10100") then
+--            Tx_valid(2)<= '1';
+--            Tx_left_expander_state<=Tx_left_expander_state + 1;
+--        elsif(Tx_left_expander_state="10100") then
+--            Tx_valid(2)<= '0';
+--            Tx_left<= "00000000";
+--            Tx_left_expander_state<="11111";
+--        end if;
+--    end if;
+--end process;
 
-process(clk) begin
-    if(rising_edge(clk)) then
-        if(Tx_right_expander_state="11111" and Tx_valid_d(3)='0') then
-            Tx_right_expander_state<="11110";
-            Tx_valid(3)<= '0';
-            Tx_right<= "00000000";
-        elsif(Tx_right_expander_state="11110" and Tx_valid_d(3)='1') then
-            Tx_right_expander_state<="00000";
-            Tx_valid(3)<= '1';
-            Tx_right<= Tx_right_d;
-        elsif(Tx_right_expander_state<"10100") then
-            Tx_valid(3)<= '1';
-            Tx_right_expander_state<=Tx_right_expander_state + 1;
-        elsif(Tx_right_expander_state="10100") then
-            Tx_valid(3)<= '0';
-            Tx_right<= "00000000";
-            Tx_right_expander_state<="11111";
-        end if;
-    end if;
-end process;
+--process(clk) begin
+--    if(rising_edge(clk)) then
+--        if(Tx_right_expander_state="11111" and Tx_valid_d(3)='0') then
+--            Tx_right_expander_state<="11110";
+--            Tx_valid(3)<= '0';
+--            Tx_right<= "00000000";
+--        elsif(Tx_right_expander_state="11110" and Tx_valid_d(3)='1') then
+--            Tx_right_expander_state<="00000";
+--            Tx_valid(3)<= '1';
+--            Tx_right<= Tx_right_d;
+--        elsif(Tx_right_expander_state<"10100") then
+--            Tx_valid(3)<= '1';
+--            Tx_right_expander_state<=Tx_right_expander_state + 1;
+--        elsif(Tx_right_expander_state="10100") then
+--            Tx_valid(3)<= '0';
+--            Tx_right<= "00000000";
+--            Tx_right_expander_state<="11111";
+--        end if;
+--    end if;
+--end process;
 
-process(clk) begin
-    if(rising_edge(clk)) then
-        if(Tx_self_expander_state="11111" and Tx_valid_d(4)='0') then
-            Tx_self_expander_state<="11110";
-            Tx_valid(4)<= '0';
-            Tx_self<= "00000000";
-        elsif(Tx_self_expander_state="11110" and Tx_valid_d(4)='1') then
-            Tx_self_expander_state<="00000";
-            Tx_valid(4)<= '1';
-            Tx_self<= Tx_self_d;
-        elsif(Tx_self_expander_state<"10100") then
-            Tx_valid(4)<= '1';
-            Tx_self_expander_state<=Tx_self_expander_state + 1;
-        elsif(Tx_self_expander_state="10100") then
-            Tx_valid(4)<= '0';
-            Tx_self<= "00000000";
-            Tx_self_expander_state<="11111";
-        end if;
-    end if;
-end process;
+--process(clk) begin
+--    if(rising_edge(clk)) then
+--        if(Tx_self_expander_state="11111" and Tx_valid_d(4)='0') then
+--            Tx_self_expander_state<="11110";
+--            Tx_valid(4)<= '0';
+--            Tx_self<= "00000000";
+--        elsif(Tx_self_expander_state="11110" and Tx_valid_d(4)='1') then
+--            Tx_self_expander_state<="00000";
+--            Tx_valid(4)<= '1';
+--            Tx_self<= Tx_self_d;
+--        elsif(Tx_self_expander_state<"10100") then
+--            Tx_valid(4)<= '1';
+--            Tx_self_expander_state<=Tx_self_expander_state + 1;
+--        elsif(Tx_self_expander_state="10100") then
+--            Tx_valid(4)<= '0';
+--            Tx_self<= "00000000";
+--            Tx_self_expander_state<="11111";
+--        end if;
+--    end if;
+--end process;
 end Behavioral;

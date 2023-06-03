@@ -37,7 +37,8 @@ entity UART_Tx is
     );
     Port ( data_in : in STD_LOGIC_VECTOR (7 downto 0);
            data_valid : in STD_LOGIC;
-           Tx,Tx_BUSY : out STD_LOGIC;
+           Tx : out STD_LOGIC:='1';
+           Tx_BUSY : out STD_LOGIC:='0';
            clk : in STD_LOGIC);
 end UART_Tx;
 
@@ -46,7 +47,7 @@ signal uart_clk,reset_counter : std_logic := '0';
 constant FPGA_clk : integer := 100_000_000; -- 100 MHz
 constant c_max : integer := FPGA_clk / baud_rate;
 signal counter : integer := 0;
-
+signal data_in_d : std_logic_vector(7 downto 0);
 constant IDLE : unsigned(3 downto 0) := "1000";
 constant START : unsigned(3 downto 0) := "1001";
 constant STOP : unsigned(3 downto 0) := "1011";
@@ -54,64 +55,57 @@ constant STOP : unsigned(3 downto 0) := "1011";
 signal state : unsigned(3 downto 0):=IDLE;
 
 begin
-
-process(reset_counter,clk)
+process(data_valid,clk,state,counter)
 begin
-    if(reset_counter='1') then
-        counter<=0;
-        uart_clk<='0';
-    elsif(rising_edge(clk)) then
-        if(counter+1=c_max/2) then
-            counter<= 0;
-            uart_clk<= not uart_clk;
-        else
-            counter<= counter + 1;
-        end if;
-    end if;
-end process;
-
-process(data_valid,uart_clk,state)
-begin
-        if(rising_edge(uart_clk)) then
+        if(rising_edge(clk)) then
             if(state=IDLE and data_valid='1') then
                 state<=START;
-            elsif(state=START) then
+                data_in_d<=data_in;
+                counter<=0;
+                Tx<='0';
+                Tx_Busy<='1';
+            elsif(state=IDLE and data_valid='0') then
+                Tx<='1';
+                Tx_Busy<='0';
+                
+            elsif(state=START and counter<c_max) then
+                counter<= counter +1;
+                Tx<='0';  
+            elsif(state=START and counter=c_max) then
                 state<="0000";
-            elsif(state<"0111")then
+                Tx<=data_in_d(0);
+                counter<=0;
+            elsif(state<"0111" and counter<c_max) then
+                counter<= counter + 1;
+                Tx<=data_in_d(to_integer(state));
+            elsif(state<"0111" and counter=c_max)then
                 state<=state + 1;
-            elsif(state="0111") then
+                counter<=0;
+                Tx<=data_in_d(to_integer(state));
+            elsif(state="0111" and counter<c_max) then
+                counter<=counter + 1;
+                Tx<=data_in_d(to_integer(state));
+            elsif(state="0111" and counter=c_max) then
                 state<=STOP;
-            elsif(state=STOP) then
+                counter<=0;
+                Tx<='1';
+            elsif(state=STOP and counter<c_max)then
+                counter<=counter + 1;
+            elsif(state=STOP and counter=c_max) then
                 state<=IDLE;
+                Tx<='1';
+                Tx_BUSY<='0';
+                
+                counter<=0;
             else
+                Tx<='1';
+                
                 state<=IDLE;
+                counter<=0;
             end if;
         end if;
 
 end process;
 
-process(state,data_in) begin
-    if(state=IDLE)then
-        reset_counter<='0';
-        TX<='1';
-        Tx_BUSY<='0';
-    elsif(state=START) then
-        reset_counter<='0';
-        TX<='0';
-        Tx_BUSY<='1';
-    elsif(state<="0111") then
-        reset_counter<='0';
-        Tx_BUSY<='1';
-        TX<=data_in(to_integer(state));
-    elsif(state=STOP) then
-        reset_counter<='0';
-        Tx_BUSY<='1';
-        TX<='1';
-    else
-        -- not a case
-        Tx_Busy<='0';
-        Tx<='1';
-        reset_counter<='0';
-    end if;
-end process;
+
 end Behavioral;
