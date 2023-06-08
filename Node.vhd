@@ -18,10 +18,25 @@ entity Node is
     );
     Port ( Tx_up,Tx_down,Tx_left,Tx_right : out STD_LOGIC;
            Rx_up,Rx_down,Rx_left,Rx_right : in STD_LOGIC;
-           clk : in STD_LOGIC);
+           clk : in STD_LOGIC;
+           Hsync,Vsync : out std_logic;
+           R,G,B : out std_logic_vector(3 downto 0);
+           led : out std_logic_vector(7 downto 0)
+           );
 end Node;
 
 architecture Behavioral of Node is
+component VGA_writer is
+    Port ( clk : in STD_LOGIC;
+           Key_event : in STD_LOGIC;
+           ASCII_in : in std_logic_vector(6 downto 0);
+           R : out STD_LOGIC_VECTOR (3 downto 0);
+           G : out STD_LOGIC_VECTOR (3 downto 0);
+           B : out STD_LOGIC_VECTOR (3 downto 0);
+           Hsync : out STD_LOGIC;
+           Vsync : out STD_LOGIC);
+end component;
+
 component router is
     generic(
         RESERVE_PATH :unsigned(1 downto 0):="10";
@@ -70,13 +85,27 @@ end component;
 --constant SELF_X : unsigned(2 downto 0):="000";
 --constant SELF_y : unsigned(2 downto 0):="000";
 
-signal Tx_valid,Rx_valid,Rx_valid_expanded: std_logic_vector(4 downto 0):="00000";
+signal Tx_valid,Rx_valid,Rx_valid_expanded,Tx_valid_expanded: std_logic_vector(4 downto 0):="00000";
 signal Tx_up_d,Tx_down_d,Tx_left_d,Tx_right_d,Rx_up_d,Rx_down_d,Rx_left_d,Rx_right_d,Rx_self_d,Tx_self_d: std_logic_vector(7 downto 0):="00000000";
-signal Tx_up_d_expanded,Tx_down_d_expanded,Tx_left_d_expanded,Tx_right_d_expanded,Rx_up_d_expanded,Rx_down_d_expanded,Rx_left_d_expanded,Rx_right_d_expanded,Rx_self_d_expanded: std_logic_vector(7 downto 0):="00000000";
+signal Tx_up_d_expanded,Tx_down_d_expanded,Tx_left_d_expanded,Tx_right_d_expanded,Tx_self_d_expanded,Rx_up_d_expanded,Rx_down_d_expanded,Rx_left_d_expanded,Rx_right_d_expanded,Rx_self_d_expanded: std_logic_vector(7 downto 0):="00000000";
 
 
 begin
 Rx_valid(4)<='0'; -- no self
+led<=Tx_self_d;
+
+clk_expander_VGA_event: clk_expander generic map (T=> 100) port map (clk,Tx_self_d,Tx_valid(4),Tx_self_d_expanded,Tx_valid_expanded(4));
+
+vga: VGA_writer port map (
+           clk =>clk,
+           Key_event=> Tx_valid_expanded(4), 
+           ASCII_in => Tx_self_d_expanded(6 downto 0),
+           R => R,
+           G =>G,
+           B=>B,
+           Hsync=>Hsync,
+           Vsync => Vsync
+);
 
 router_00: router generic map(SELF_X=>SELF_X, SELF_Y=>SELF_Y) 
 port map(clk,
